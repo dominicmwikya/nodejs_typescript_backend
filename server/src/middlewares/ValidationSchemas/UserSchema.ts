@@ -1,6 +1,5 @@
 import * as Joi from 'joi';
 import {Request, Response, NextFunction} from 'express'
-import RequestUtils from '../../database/RequestHandlers';
  const RegisterSchema = Joi.object({
     firstName: Joi.string()
         .required(),

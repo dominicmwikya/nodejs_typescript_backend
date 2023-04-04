@@ -24,6 +24,8 @@ const Signin=()=>{
   event.preventDefault();
   try {
     const response = await axios.post('http://localhost:8000/users/login', values);
+
+    console.log(response.data)
      localStorage.setItem('token',response.data.result.token.accessToken);
      setUser({...user,authState:true})
      redirectTo('/');

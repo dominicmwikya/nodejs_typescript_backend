@@ -16,6 +16,7 @@ const Index = () => {
               {user.authState?(
               <>
                 <Nav.Link href="/dashboard">Dashboard</Nav.Link>
+                <Nav.Link href='/products'>Products</Nav.Link>
               
                 <Nav><button onClick={handleLogout}>logout</button></Nav>
               </>

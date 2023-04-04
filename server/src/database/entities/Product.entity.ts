@@ -1,19 +1,17 @@
-import {Entity, Column, PrimaryGeneratedColumn} from 'typeorm';
-
+import {Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { User } from './User.entity';
 @Entity()
 export class Product{
     @PrimaryGeneratedColumn()
      id!:number;
     @Column()
-     item_name!:string;
+     name!:string;
     @Column()
-     item_category!:string;
+     category!:string;
     @Column()
      min_qty!:number;
-    @Column()
+    @Column({default:0})
      qty!:number;
-    @Column({default:"admin"})
-     user!:string
-
-
+    @ManyToOne (()=>User, user=>user.products)
+    users!:User
 }

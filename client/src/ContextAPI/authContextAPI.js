@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
+import { useNavigate  } from 'react-router-dom';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
 const AuthContext = createContext();
 
 function AuthProvider(props){
@@ -11,6 +11,7 @@ function AuthProvider(props){
       const [roles, setRoles]=useState([])
      const AuthenticateToken = async () => {
         const token = await localStorage.getItem('token');
+   
         try {
             // Verify the access token
             const result = await axios.get('http://localhost:8000/users/protected-route', {
@@ -21,6 +22,7 @@ function AuthProvider(props){
               setUser({name:result.data.name, email: result.data.usermail, id: result.data.id, authState: true });
             return user;  
           } catch (error) {
+            navigate('/login');
               return error;
           }
       };
