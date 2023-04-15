@@ -1,4 +1,4 @@
-import React,{useContext, useState} from 'react';
+import React,{useContext} from 'react';
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
@@ -17,12 +17,13 @@ const Index = () => {
               <>
                 <Nav.Link href="/dashboard">Dashboard</Nav.Link>
                 <Nav.Link href='/products'>Products</Nav.Link>
-              
+                <Nav.Link href='/users'> Users</Nav.Link>
+                <Nav.Link href="/register">Register</Nav.Link>
                 <Nav><button onClick={handleLogout}>logout</button></Nav>
               </>
               ):(
               <>
-                <Nav.Link href="/register">Register</Nav.Link>
+              
                 <Nav.Link href="/login">Login</Nav.Link>
               </>
               )}    

@@ -27,6 +27,7 @@ export class User {
   
   @Column({default:false})
   codeSent!:boolean
+  
 @OneToOne(()=>Profile)
 @JoinColumn()
  profile!:Profile;

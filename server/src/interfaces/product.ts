@@ -8,3 +8,12 @@ export default interface ProductInterface {
     users:User
   }
   
+
+
+  export default interface IPostProduct {
+    name: string;
+    description: string;
+    min_qty: number;
+    category:string,
+  }
+  

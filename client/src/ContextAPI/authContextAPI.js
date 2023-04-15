@@ -8,7 +8,6 @@ function AuthProvider(props){
      const [user, setUser]=useState({
         email:'', authState:false, id:''
      });
-      const [roles, setRoles]=useState([])
      const AuthenticateToken = async () => {
         const token = await localStorage.getItem('token');
    
@@ -22,7 +21,7 @@ function AuthProvider(props){
               setUser({name:result.data.name, email: result.data.usermail, id: result.data.id, authState: true });
             return user;  
           } catch (error) {
-            navigate('/login');
+              navigate('/login');
               return error;
           }
       };
@@ -33,17 +32,16 @@ function AuthProvider(props){
           setUser({email:"",id:"",authState:false})
           navigate('/login');
       };
-    
-  
+
+      const auth = async () => {
+        try {
+          await AuthenticateToken();
+        } catch (error) {
+            return error;
+        }
+      };
 
      useEffect(() => {
-        const auth = async () => {
-          try {
-            await AuthenticateToken();
-          } catch (error) {
-              return error;
-          }
-        };
         auth();
       }, []);
       

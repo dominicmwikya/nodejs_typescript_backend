@@ -6,6 +6,7 @@ import {authGuard} from '../middlewares/Guards/authGuard'
 const userRoutes:Router=express.Router();
 
 userRoutes.get('/', UserController.getUsers);
+userRoutes.get('/test', UserController.testProductPaginate)
 userRoutes.post('/create', joiValidate, UserController.registerNewUser);
 userRoutes.post('/login', joiValidateLogin,UserController.loginUser);
 userRoutes.get('/verify/:uniquestring', UserController.verifyUserCode);

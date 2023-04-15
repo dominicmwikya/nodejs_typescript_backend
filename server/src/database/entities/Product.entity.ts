@@ -4,6 +4,7 @@ import { User } from './User.entity';
 export class Product{
     @PrimaryGeneratedColumn()
      id!:number;
+     
     @Column()
      name!:string;
     @Column()

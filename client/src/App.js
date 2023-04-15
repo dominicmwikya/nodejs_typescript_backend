@@ -7,6 +7,7 @@ import Navbar1 from './components/NavigationBar';
 import Dashboard from './pages/Dashboard/Dashboard'
 import NotFound from './components/NotFound/NotFound'
 import Products from './pages/Products/Products'
+import Users from './pages/Users/Users';
 import Home from './pages/Home/Index'
 function App() {
  
@@ -18,6 +19,7 @@ function App() {
             <Route path ='/' element={<Home />} />
             <Route  path='/dashboard' element={<Dashboard/>} />
             <Route path='/products' element={<Products/>} />
+            <Route  path='/users' element={<Users/>} />
             <Route path='/login' element={<Signin/>}  />
             <Route path='/register' element={<Signup/>} />
 

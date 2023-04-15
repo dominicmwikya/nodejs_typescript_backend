@@ -1,7 +1,7 @@
 import React from 'react'
-export const ProductForm=({handleSubmit, handleValueChange, values}) =>{
+export const EditProductForm=({updateProduct, handleValueChange, editValues}) =>{
   return (
-    <form className='form-inline' onSubmit={handleSubmit} >
+    <form className='form-inline' onSubmit={updateProduct} >
         <div className='form-group row'>
             <div className='col'>
                 <div className="input-group mb-2">
@@ -10,14 +10,14 @@ export const ProductForm=({handleSubmit, handleValueChange, values}) =>{
                             name="name" 
                             placeholder="item name" 
                              onChange={handleValueChange}
-                             value={values.name}
+                             value={editValues.name}
                              />
                 </div> 
             </div>
             
             <div className='col'>
                 <div className="input-group mb-2"> 
-                <select name='category' className='form-control'  onChange={handleValueChange}  value={values.category}>
+                <select name='category' className='form-control'  onChange={handleValueChange}  value={editValues.category}>
                     <option> Please select category</option>
                     <option value='charger'>charger</option>
                     <option value='phone'>phone</option>
@@ -34,38 +34,13 @@ export const ProductForm=({handleSubmit, handleValueChange, values}) =>{
                     name="min_qty" 
                     placeholder="min item qty" 
                     onChange={handleValueChange}
-                    value={values.min_qty}
+                    value={editValues.min_qty}
                     />
             </div> 
         </div>
 
-        <div className='col'>
-            <div className="input-group mb-2">
-                <select className='form-control' name="unit" 
-                 onChange={handleValueChange}
-                 value={values.unit}
-                 >
-                    <option defaultValue>Select Unit</option>
-                    <option value="piece">Piece</option>
-                    <option value="kg">Kg</option>
-                </select>
-            </div> 
         </div>
-            
-        </div>
-        <div className='form-group row'>
-            <div className='col'>
-                <div className="input-group mb-2">
-                    <input  className="form-control" 
-                            type="textarea" 
-                            name="description" 
-                            placeholder="Item description" 
-                            onChange={handleValueChange}
-                            value={values.description}
-                            />
-                </div> 
-            </div>
-        </div>
+       
         
         <div className='form-group row'>
             <input  className="btn btn-success" 

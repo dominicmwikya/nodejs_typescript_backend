@@ -2,7 +2,7 @@ import axiosSetup from "../configsetup/axiosconfig";
 
 class APIs {
     registerUser = async (values) => {
-     
+      
       try {
         const response = await axiosSetup.post('/users/create', values);
         return response.data;
