@@ -11,8 +11,12 @@ import {Request, Response, NextFunction} from 'express'
     roleId:Joi.number()
           .required(),
     password: Joi.string()
-        .min(8)
-        .pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).required(),
+          .pattern(new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]+\$"))
+          .required(),
+    confirmPassword: Joi.string()
+          .valid(Joi.ref('password'))
+          .required()
+          .messages({ 'any.only': 'Passwords do not match' })
 });
 
  export const joiValidate= async(req:Request, res:Response,next:NextFunction)=>{

@@ -2,7 +2,6 @@ import { Response, Request } from "express";
 import UserRespository from "../database/Repositories/UserRepository";
 import RequestHandlers from "../database/RequestHandlers";
 import { Like} from 'typeorm'
-import { User } from "../database/entities/User.entity";
 import PaginationOptions from '../interfaces/paginationOptions'
 export class UserController {
   static async registerNewUser(req: Request, res: Response) {
@@ -23,33 +22,27 @@ export class UserController {
   }
 
   static async testProductPaginate(req:Request, res:Response):Promise<any>{
-     const { page,sortBy, orderBy, skip, take, searchValue, searchColumn } = req.query;
-     try {
-       let whereClause = {};
+    const { page, sortBy, orderBy, skip, take, searchValue, searchColumn } = req.query;
+      try {
+        const search = searchColumn && searchValue ? { [searchColumn as string]: Like(`%${searchValue}%`) } : undefined;
+        const options: PaginationOptions & { search?: any } = {
+          take: Number(take),
+          skip: Number(skip),
+          order: { [sortBy as string]: orderBy },
+          search,
+        };
+        
+        if (page) {
+          options.skip = (Number(page) - 1) * (options.take ?? 2);
+        }
 
-       if (searchColumn && searchValue ) {
-         whereClause = { [searchColumn as string]: Like(`%${searchValue}%`) };
-       }
-       const options: PaginationOptions = {
-        take: Number(take),
-        skip: Number(skip),
-        order: { [sortBy as string]: orderBy },
-        where: whereClause,
-      };
-     
-      if (page) {
-        options.skip = (Number(page) - 1) * (options.take ?? 2);
+        console.log(options);
+        const paginatedResult = await UserRespository.Paginate(options);
+        res.status(200).json(paginatedResult);
+      } catch (error) {
+        res.status(500).send('Error retrieving products');
       }
 
-      console.log(options)
-       const paginatedResult= await UserRespository.Paginate(options);
-          // console.log(paginatedResult)
-
-       res.status(200).json(paginatedResult);
-     
-     } catch (error) {
-       res.status(500).send('Error retrieving products');
-     }
    }
 
   static async verifyUserCode(req: Request, res: Response) {

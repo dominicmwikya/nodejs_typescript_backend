@@ -1,6 +1,5 @@
 import React, {useState}from 'react'
 import { Table } from 'react-bootstrap';
-// import './Table.css'
  const Index=({className, showModal,data,_edit,_delete, showEditModal}) =>{
     const [currentPage, setCurrentPage] = useState(1);
     const[currentIndex, setCurrentIndex]=useState(1);
@@ -65,13 +64,13 @@ import { Table } from 'react-bootstrap';
       <div className='table-container'> 
         <div className='container'>
           <div className='row'>
-            <div className='col-md-8 col-sm-10 col-10 mx-auto'>
+            <div className='col'>
               <div className='table-responsive'>
+                
                   <i class="fa fa-plus" aria-hidden="true" onClick={showModal} 
                     style={{color:"green", color:'white', backgroundColor:'green',
                     margin: '10px 0px', borderRadius:'5px', padding:'10px 40px'}}>
                  </i>
-            
                   <Table className={className}>
                     {renderHeader()}
                     {renderBody()}

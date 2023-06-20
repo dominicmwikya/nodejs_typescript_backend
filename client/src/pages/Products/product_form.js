@@ -1,87 +1,69 @@
-import React from 'react'
+import React from 'react';
+import {Col, Form,Button} from 'react-bootstrap'
 export const ProductForm=({handleSubmit, handleValueChange, values}) =>{
   return (
-    <form className='form-inline' onSubmit={handleSubmit} >
-        <div className='form-group row'>
-            <div className='col'>
-                <div className="input-group mb-2">
-                    <input  className="form-control" 
-                            type="text" 
-                            name="name" 
-                            placeholder="item name" 
-                             onChange={handleValueChange}
-                             value={values.name}
-                             />
-                </div> 
-            </div>
-            
-            <div className='col'>
-                <div className="input-group mb-2"> 
-                <select name='category' className='form-control'  onChange={handleValueChange}  value={values.category}>
-                    <option> Please select category</option>
-                    <option value='charger'>charger</option>
-                    <option value='phone'>phone</option>
-                    <option value='laptop'>laptop</option>
-                </select>
-                </div> 
-            </div>
-        </div>
-        <div className='form-group row'>
-        <div className='col'>
-            <div className="input-group mb-2"> 
-                <input  className="form-control" 
-                    type="number" 
+    <Form className='form-inline' onSubmit={handleSubmit} >
+        <Form.Group className='mb-3 row'>
+            <Col>
+               <Form.Control 
+                     type='text' 
+                     name='name' 
+                     value={values.name} 
+                     onChange={handleValueChange}
+                     placeholder='NAME'/>
+            </Col>
+            <Col>
+                <Form.Select 
+                    name='category' 
+                    onChange={handleValueChange}  
+                    value={values.category}>
+                    <option> Select Category</option>
+                        <option value='charger'>charger</option>
+                        <option value='phone'>phone</option>
+                        <option value='laptop'>laptop</option>
+                </Form.Select>
+            </Col>
+        </Form.Group>
+      
+      <Form.Group className='mb-3 row'> 
+         <Col>
+            <Form.Control 
+                   type="number" 
                     name="min_qty" 
-                    placeholder="min item qty" 
+                    placeholder="ALERT QUANTITY" 
                     onChange={handleValueChange}
-                    value={values.min_qty}
-                    />
-            </div> 
-        </div>
+                    value={values.min_qty}/>
+         </Col>
+         <Col>
+            <Form.Select name="unit" 
+                    onChange={handleValueChange}
+                    value={values.unit}
+                    >
+                <option defaultValue>Select Unit</option>
+                <option value="piece">Piece</option>
+                <option value="kg">Kg</option>
+            </Form.Select>
+         </Col>
+      </Form.Group>
+      
+      <Form.Group className='mb-3 row'>
+          <Form.Control 
+                as="textarea"
+                rows={4}  
+                name="description" 
+                placeholder="DESCRIPTION" 
+                onChange={handleValueChange}
+                value={values.description} 
+            />
+      </Form.Group>
 
-        <div className='col'>
-            <div className="input-group mb-2">
-                <select className='form-control' name="unit" 
-                 onChange={handleValueChange}
-                 value={values.unit}
-                 >
-                    <option defaultValue>Select Unit</option>
-                    <option value="piece">Piece</option>
-                    <option value="kg">Kg</option>
-                </select>
-            </div> 
-        </div>
-            
-        </div>
-        <div className='form-group row'>
-            <div className='col'>
-                <div className="input-group mb-2">
-                    <input  className="form-control" 
-                            type="textarea" 
-                            name="description" 
-                            placeholder="Item description" 
-                            onChange={handleValueChange}
-                            value={values.description}
-                            />
-                </div> 
-            </div>
-        </div>
-        
-        <div className='form-group row'>
-            <input  className="btn btn-success" 
-                    type="submit" 
-                    value="Add Item"
-                    style={{textShadow:"none", 
-                    height:'40px',
-                    width:"150px",
-                    color:'white', 
-                    borderRadius:"10px",
-                    textCenter:"center",
-                    marginLeft:'50%',
-                    display: "flex", alignItems: "center", justifyContent: "center" 
-                }}
-                />
-        </div> 
-    </form>
+      <Form.Group className='row'>
+         <Button type='submit'
+                 variant='success'
+                 style={{textShadow:"none", height:'40px', width:"150px"}}>
+                 Add Product
+                </Button>
+      </Form.Group>     
+    </Form>
   )
 }

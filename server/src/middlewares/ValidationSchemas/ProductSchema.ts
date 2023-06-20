@@ -10,6 +10,7 @@ const ProductSchema= Joi.object({
            .required(),
     unit:Joi.string()
            .required(),
+    qty:Joi.number().integer().min(1),
     description:Joi.string()
                .required(),
  

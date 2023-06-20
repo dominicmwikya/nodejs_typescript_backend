@@ -6,6 +6,7 @@ import TableUI from '../../components/UIs/Tables/TableUis';
 import { useAddProductAPI, useDeleteProductAPI, useFetchProductAPI, useGetProductEdit,useProductUpdate } from '../../appAPIs/productAPIs';
 import { ProductForm } from './product_form';
 import { EditProductForm } from './edit_product_form';
+import { Container,Row,Col } from 'react-bootstrap';
 
 export default function Item() {
   const [show, setShow] = useState(false);
@@ -48,6 +49,7 @@ export default function Item() {
     fetchItems();
   }, [fetchItems, user.id]);
 
+
   const handleEdit =async (id) => {
     try {
       const editResult= await fetchEditProduct(id);
@@ -58,7 +60,6 @@ export default function Item() {
     }
   };
 
-  // console.log(editValues)
   const handleDelete = async (id) => {
     try {
       const confirm = await swal({
@@ -183,41 +184,43 @@ export default function Item() {
     ev.preventDefault();
     createItem();
   }
-
   return (
-    <div>
-      <TableUI
-        data={items}
-        _edit={handleEdit}
-        _delete={handleDelete}
-        showModal={showModal}
-        showEditModal={showEditModal}
-        className='table table-striped table-bordered hover' 
-      />
-      <Modal
-        show={show}
-        onClose={closeModal}
-        header="Add Item Modal"
-        footer="item modal"
-      >
-        <ProductForm
-          handleValueChange={handleValueChange}
-          values={values}
-          handleSubmit={handleSubmit}
-        />
-      </Modal> 
-      <Modal  
-          show={editshow}
-          onClose={closeEditModal}
-        >
-          <EditProductForm
-             editValues={editValues}
-             updateProduct={updateProduct}
-             handleValueChange={handleEditChange}
-          />
-      </Modal>
-    </div>       
+    <Container>
+      <Row>
+        <Col md={9}>
+            <TableUI
+              data={items}
+              _edit={handleEdit}
+              _delete={handleDelete}
+              showModal={showModal}
+              showEditModal={showEditModal}
+              className='table table-striped table-bordered hover' 
+              />
+
+            <Modal
+              show={show}
+              onClose={closeModal}
+              header="Add Item Modal"
+              footer="item modal">
+              <ProductForm
+                handleValueChange={handleValueChange}
+                values={values}
+                handleSubmit={handleSubmit}
+                />
+            </Modal> 
+
+            <Modal  
+                show={editshow}
+                onClose={closeEditModal}>
+                <EditProductForm
+                  editValues={editValues}
+                  updateProduct={updateProduct}
+                  handleValueChange={handleEditChange}
+                />
+            </Modal>
+        </Col>
+      </Row>
+    </Container>       
   ); 
-  
 }
 

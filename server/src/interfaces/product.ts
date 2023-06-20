@@ -1,5 +1,5 @@
 import {User} from '../database/entities/User.entity'
-export default interface ProductInterface {
+export  interface ProductInterface {
     id: number;
     name: string;
     category: string;
@@ -15,5 +15,6 @@ export default interface ProductInterface {
     description: string;
     min_qty: number;
     category:string,
+    qty:number;
   }
   

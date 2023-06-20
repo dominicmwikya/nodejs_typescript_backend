@@ -2,6 +2,7 @@ import { Entity, Column, PrimaryGeneratedColumn,JoinColumn, OneToOne , ManyToMan
 import { Profile } from './Profile.entity';
 import { Role } from './Role.entity';
 import { Product } from './Product.entity';
+import { Purchases } from './purchases.entity';
 
 @Entity()
 export class User {
@@ -32,10 +33,21 @@ export class User {
 @JoinColumn()
  profile!:Profile;
 
+ @OneToMany(() => Purchases, purchase => purchase.user)
+ purchases!: Purchases[];
+
+
  // Define the many-to-many relationship with the roles table
  @ManyToMany(() => Role, role => role.users)
  @JoinTable()
  roles!: Role[];
+ 
  @OneToMany(()=>Product, product=>product.users)
  products!:Product[]
+
+ @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+ createdAt!: Date;
+
+ @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
+ updatedAt!: Date;
 }

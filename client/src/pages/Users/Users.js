@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from 'react'
 import Receives from './index';
+import { Container, Row, Col } from 'react-bootstrap';
 export default function Users() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -15,8 +16,7 @@ export default function Users() {
   const handleTakeChange = (event) => {
     const newTake = parseInt(event.target.value);
     setTake(newTake);
-    setCurrentPage(1); // reset page to 1 when take changes
-    
+    setCurrentPage(1); // reset page to 1 when take changes.
   };
 
   const fetchData = async (currentPage) => {
@@ -33,14 +33,20 @@ export default function Users() {
   };
   
   return (
-    <Receives   
-        take={take}
-        handlePageChange={handlePageChange}
-        handleTakeChange={handleTakeChange}
-        page={currentPage}
-        data={data}
-        totalPages={totalPages}
-        currentPage={currentPage}
-    />
+    <Container>
+      <Row>
+        <Col>
+            <Receives   
+            take={take}
+            handlePageChange={handlePageChange}
+            handleTakeChange={handleTakeChange}
+            page={currentPage}
+            data={data}
+            totalPages={totalPages}
+            currentPage={currentPage}
+        />
+        </Col>
+      </Row>
+    </Container>
   )
 }

@@ -5,6 +5,7 @@ import ProductInterface from '../../interfaces/product';
 import { Pagination } from '../../helpers/pagination'
 import PaginationOptions from '../../interfaces/paginationOptions'
 import PaginationData from '../../interfaces/PaginationData';
+import { ILike } from 'typeorm';
 const product = new Product();
 export class ProductRepository {
   private static ProductRepo = databaseConfig.getRepository(Product);
@@ -72,6 +73,7 @@ export class ProductRepository {
         relations: {
           users: true
         },
+        where:{flag:0}
       }
     );
     return products;
@@ -86,7 +88,7 @@ export class ProductRepository {
     const product = await this.ProductRepo.findOne({ where: { id: id } });
     return product || null;
   }
-
+ 
   /** 
   * Update product
   * @param {Object} data update data object of type ProductInterface.
@@ -98,12 +100,12 @@ export class ProductRepository {
   * 
 */
 
-  static updateProductInfo = async ({ name, min_qty, category }: ProductInterface, productId: number): Promise<null | object> => {
+  static updateProductInfo = async ({ name, qty,min_qty, category }: ProductInterface, productId: number): Promise<null | object> => {
     const productExists = await this.ProductRepo.findOne({ where: { id: productId } });
     if (!productExists) {
       return null;
     }
-    const result = await this.ProductRepo.update({ id: productId }, { name, min_qty, category });
+    const result = await this.ProductRepo.update({ id: productId }, { name, min_qty, category,qty });
     if (result.affected === 0) {
       return { error: `ERROR! Error occured while Updating product id ${productId}` };
     }
@@ -118,12 +120,31 @@ export class ProductRepository {
  
   static async clearProductById(id: number): Promise<boolean> {
     try {
-      const deleteProductResult = await this.ProductRepo.delete(id);
-
-      return deleteProductResult.affected !== 0;
+      const result = await this.ProductRepo.update({ id: id }, { flag: 1 });
+      return result.affected !== 0;
     } catch (error: any) {
-      throw new Error(`Failed to delete product: ${error.message}`);
+      throw new Error(`Failed to update product: ${error.message}`);
     }
   }
+  
+
+  static async  findByTerm(searchTerm:string):Promise<Product[]>{
+    try {
+      const products = await this.ProductRepo.find({
+        where: {
+          name: ILike(`${searchTerm}%`), flag:0
+        },
+      });
+     return products;
+    } catch (error:any) {
+        throw new Error('Error fetching products:'+ error)
+    }
+  }
+  
+  static async updateQTY(idd:number, qtyy:number){
+     const response=  await this.ProductRepo.update({id:idd }, {qty:qtyy});
+     return response;
+  }
+
 }
 

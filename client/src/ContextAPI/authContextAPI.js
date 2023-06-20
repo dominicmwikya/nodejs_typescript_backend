@@ -10,7 +10,6 @@ function AuthProvider(props){
      });
      const AuthenticateToken = async () => {
         const token = await localStorage.getItem('token');
-   
         try {
             // Verify the access token
             const result = await axios.get('http://localhost:8000/users/protected-route', {

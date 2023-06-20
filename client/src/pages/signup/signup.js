@@ -1,17 +1,16 @@
-import React,{useState, useContext, useEffect} from 'react'
+import React,{useState, useEffect} from 'react'
 import axios from 'axios'
 import swal from 'sweetalert'
-import { useRegister } from '../../appAPIs/APIs'
-import { AuthContext } from '../../ContextAPI/authContextAPI'
+import { useRegister } from '../../appAPIs/APIs';
+import { AuthContext } from '../../ContextAPI/authContextAPI';
+import{Container, Row, Col, Form, Button, Card} from 'react-bootstrap';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
+import { useNavigate } from 'react-router-dom';
+
 const Signup=()=>{
     const {RegisterUser}= useRegister()
-    const [values, setValues]=useState({
-        firstName:"",
-        lastName:"",
-        password:'',
-        email:"",
-        roleId:''
-    })
+    const NavigateTo=useNavigate()
     const [roles, setRoles]=useState([])
 
    const role= async()=>{
@@ -22,139 +21,132 @@ const Signup=()=>{
       role();
    }, [])
 
-    const handleValueChange=(e)=>{
-        let name= e.target.name;
-        let value= e.target.value;
-        const newValues = {
-        ...values,
-        [name]: value
+   const formik = useFormik({
+    initialValues: {
+      firstName: '',
+      lastName: '',
+      password: '',
+      confirmPassword:'',
+      email: '',
+      roleId: '',
+    },
+    validationSchema: Yup.object({
+      firstName: Yup.string().required('First name is required'),
+      lastName: Yup.string().required('Last name is required'),
+      password: Yup.string()
+        .required('Password is required')
+        .min(8, 'Password must be at least 8 characters')
+        .matches(
+          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/,
+          'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
+        ),
+      confirmPassword: Yup.string()
+        .required('Confirm password is required')
+        .oneOf([Yup.ref('password'), null], 'Passwords must match'),
+      email: Yup.string().email('Invalid email address').required('Email is required'),
+      roleId: Yup.string().required('Role is required'),
+    }),
+    onSubmit: async (values) => {
+      try {
+        const response = await axios.post('http://localhost:8000/users/create', values);
+        swal({
+          text: 'User Added Successfully',
+          title: 'Success',
+          icon: 'success',
+          timer: 3000,
+        }).then(()=>{
+          NavigateTo('/users')
+        });
+       
+      } catch (error) {
+        console.log(error);
+        if (error.response.data) {
+          swal({
+            text: error.response.data,
+            icon: 'warning',
+            title: 'failed',
+            timer: 3500,
+          });
+        }
+        if (error.response.data.error) {
+          console.log(error.response.data.error);
+          swal({
+            text: error.response.data.error,
+            icon: 'warning',
+            title: 'failed',
+            timer: 3500,
+          });
+        }
       }
-      setValues(newValues)
-    }
-   
-    const submitForm = async (event) => {
-        event.preventDefault();
-          try {
-            const response = await axios.post('http://localhost:8000/users/create', values);
-            console.log(response.data); // If there's no error, log the response data
-            swal({
-                text: response.data,
-                title: 'Success',
-                icon: 'success',
-                timer: 3000,
-              });
-          } catch (error) {
-
-            console.log(error)
-            if (error.response.data) {
-   
-              swal({
-                text: error.response.data,
-                icon: 'warning',
-                title: "failed",
-                timer: 3500
-              })
-            }
-            if (error.response.data.error) {
-              console.log(error.response.data.error)
-              swal({
-                text: error.response.data.error,
-                icon: 'warning',
-                title: "failed",
-                timer: 3500
-              })
-            }
-          }
-      };
-      
+    },
+  });
+  
     return (
-        <div className="container">
-        <div className="row">
-          <div className="col-md-8">
-           <div className='card' style={{marginTop:'30px'}}>
-           <div className="card-header text-center " style={{fontFamily:'Sans-Serif', textTransform:'uppercase', fontSize:'1.5rem'}}>
-           User Signup form
-            </div>
-             <div className='card-body' style={{backgroundColor:'#F8F8F8'}}>
-             <div className='card' >
-              <div className='card-body'>
-                <form onSubmit={submitForm}  className="userform" style={{marginLeft:"0px",paddingLeft:"0px"}}>
-                  <div className='form-group row'>
-                      <div className='col'>
-                      <div className="input-group mb-3">
-                          <div className="input-group-prepend  col-sm-3">
-                              <span className="input-group-text">User Name</span>
-                          </div>
-                          <input id="firstName" name="firstName"  className='form-control' type="text" onChange={handleValueChange}  />
-                      </div> 
-                      </div>
-                  </div>
-                  
-                  <div className='form-group row'>
-                      <div className='col'>
-                      <div className="input-group mb-3">
-                          <div className="input-group-prepend  col-sm-3">
-                              <span className="input-group-text">User Name</span>
-                          </div>
-                          <input id="lastName" name="lastName"  className='form-control' type="text" onChange={handleValueChange}  />
-                      </div> 
-                      </div>
-                  </div>
-
-                  <div className='form-group row'>
-                      <div className='col'>
-                      <div className="input-group mb-2">
-                          <div className="input-group-prepend  col-sm-3">
-                              <span className="input-group-text">User Email: </span>
-                          </div>
-                          <input id="email" name="email" className='form-control' type="email" onChange={handleValueChange}    />
-                      </div> 
-                      </div>
-                  </div>
-                   
-                  <div className='form-group row'>
-                      <div className='col'>
-                      <div className="input-group mb-2">
-                          <div className="input-group-prepend  col-sm-3">
-                              <span className="input-group-text">Role: </span>
-                          </div>
-                          <select name='roleId' className='form-control' onChange={handleValueChange}>
-                            <option value="">Select User Role</option>
-                            {
-                              roles?.map(role=>{
-                                return (
-                                  <option key={role.id} value={role.id}>{role.role}</option>
-                                )
-                              })
-                            }
-                          </select>
-                      </div> 
-                      </div>
-                  </div>
-               
-                
-                  <div className='form-group row'>
-                      <div className='col'>
-                      <div className="input-group mb-3">
-                          <div className="input-group-prepend  col-sm-3">
-                              <span className="input-group-text">password: </span>
-                          </div>
-                        <input id="password" name="password" className='form-control' type="password"  onChange={handleValueChange} />
-                      </div> 
-                      </div>
-                     
-                  </div>
-                   <button className='btn btn-success btn-sm' style={{width:'100px', float:'right', marginLeft:'auto', marginRight:'0px'}}>ADD USER</button>
-                </form> 
-              </div>
-            </div>  
-             </div>
-           </div>
-          </div>
-        </div>
-      </div>
+      <Container>
+      <Row>
+        <Col md={6}>
+          <Card>
+            <Card.Header>USER REGISTRATION</Card.Header>
+            <Card.Body>
+              <Form onSubmit={formik.handleSubmit}>
+              <Form.Group className='mb-3 row'>
+                <Form.Label className='col-sm-3'>First Name</Form.Label>
+                <Col sm={9}>
+                  <Form.Control type='text' name='firstName' onChange={formik.handleChange} value={formik.values.firstName} />
+                  {formik.touched.firstName && formik.errors.firstName ? <div className='text-danger'>{formik.errors.firstName}</div> : null}
+                </Col>
+              </Form.Group>
+              <Form.Group className='mb-3 row'>
+                <Form.Label className='col-sm-3'>last Name</Form.Label>
+                <Col sm={9}>
+                  <Form.Control type='text' name='lastName' onChange={formik.handleChange} value={formik.values.lastName} />
+                  {formik.touched.lastName && formik.errors.lastName ? <div className='text-danger'>{formik.errors.lastName}</div> : null}
+                </Col>
+              </Form.Group>
+              <Form.Group className='mb-3 row'>
+                <Form.Label className='col-sm-3'>EMAIL</Form.Label>
+                <Col sm={9}>
+                  <Form.Control type='email' name='email' onChange={formik.handleChange} value={formik.values.email} />
+                  {formik.touched.email && formik.errors.email ? <div className='text-danger'>{formik.errors.email}</div> : null}
+                </Col>
+               </Form.Group>
+                <Form.Group className='mb-3 row'>
+                  <Form.Label className='col-sm-3'>ROLE</Form.Label>
+                  <Col sm={9}>
+                    <Form.Select name='roleId' onChange={formik.handleChange}>
+                      <option value=''>Select User Role</option>
+                      {roles?.map((role) => {
+                        return (
+                          <option key={role.id} value={role.id}>
+                            {role.role}
+                          </option>
+                        );
+                      })}
+                    </Form.Select>
+                    {formik.touched.roleId && formik.errors.roleId ? <div className='text-danger'>{formik.errors.roleId}</div> : null}
+                  </Col>
+                </Form.Group>
+                <Form.Group className='mb-3 row'>
+                  <Form.Label className='col-sm-3'>Password</Form.Label>
+                  <Col sm={3}>
+                    <Form.Control name='password' type='password' onChange={formik.handleChange} />
+                    {formik.touched.password && formik.errors.password ? <div className='text-danger'>{formik.errors.password}</div> : null}
+                  </Col>
+                  <Form.Label className='col-sm-3'>Repeat</Form.Label>
+                  <Col sm={3}>
+                    <Form.Control name='confirmPassword' type='password' onChange={formik.handleChange} />
+                    {formik.touched.confirmPassword && formik.errors.confirmPassword ? <div className='text-danger'>{formik.errors.confirmPassword}</div> : null}
+                  </Col>
+                </Form.Group>
+                <Form.Group>
+                  <Button variant="primary" type="submit" style={{float:'right'}}>SUBMIT USER</Button>
+                </Form.Group>
+              </Form>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+       </Container>
       );
 }
-
-
 export default Signup
