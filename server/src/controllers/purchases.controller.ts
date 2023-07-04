@@ -21,7 +21,8 @@ export class PurchasesController {
             const product = await ProductRepo.findOneOrFail({ where: { id: purchase.productId } });
             const supplier = await SupplierRepo.findOneOrFail({ where: { id: purchase.supplierId } });
             const user = await UserRepo.findOneOrFail({ where: { id: purchase.userId } });
-            const Result:Purchases = await PurchaseRepository.addNewPurchase(product, supplier, user, purchase.price, purchase.quantity);
+            const Result:Purchases = await PurchaseRepository.addNewPurchase(product, supplier, user,
+               purchase.price, purchase.quantity,purchase.sprice);
             savedPurchases.push(Result);
         }
         RequestHandlers.handleRequestSuccess(res,200)({
@@ -33,6 +34,7 @@ export class PurchasesController {
         })
     }
   }
+
 
   static async getProductPurchases(req:Request, res:Response){
       const {sortBy, orderBy, searchValue, searchColumn, take, skip} = req.query;
@@ -46,7 +48,7 @@ export class PurchasesController {
             take:Number(take) || 10,
             skip:Number(skip) || 0,
             order:{
-              [sortBy as string]:orderBy
+             createdAt:'DESC'
             },
             relations: [
             'user',

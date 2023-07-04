@@ -20,4 +20,14 @@ export default class RequestHandlers {
       });
     };
   }
+
+  static handleTypes(obj:string | string[]){
+    type stringArray=Array<string>  //generic type of a array of type string;
+     
+  }
+
+  static testGeneric<S,T>(s:S, t:T):S{
+    return s;
+  }
 }
+

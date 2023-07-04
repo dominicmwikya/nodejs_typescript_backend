@@ -4,7 +4,8 @@ import { ProductController } from '../controllers/product.controller'
      const productRoutes= Router();
 
      productRoutes.post('/:userId',  ProductValidator,ProductController.CreateProduct);
-     productRoutes.get('/search', ProductController.getProductsBySearchTerm)
+     productRoutes.get('/testing',ProductController.testHelper);
+     productRoutes.get('/search', ProductController.findProductByName)
      productRoutes.get('/test', ProductController.testProductPaginate )
 
  
@@ -13,6 +14,7 @@ import { ProductController } from '../controllers/product.controller'
         productRoutes.put('/:id', ProductController.updateProduct);
         productRoutes.delete('/:id', ProductController.deletProduct);
         productRoutes.get('/', ProductController.getProducts);
+     
         
 
 

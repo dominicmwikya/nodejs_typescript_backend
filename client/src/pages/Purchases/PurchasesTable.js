@@ -10,10 +10,12 @@ export default function PurchasesTable({data}) {
                 <th>#</th>
                 <th>Date</th>
                 <th>Product</th>
+                <th>batchNo</th>
                 <th>Quantity</th>
                 <th>@PRICE</th>
+                <th>soldQty</th>
                 <th>Supplier</th>
-                <th>Purchased By</th>
+                <th>Customer</th>
                 <th>status</th>
             </tr>
             </thead>
@@ -21,10 +23,12 @@ export default function PurchasesTable({data}) {
             {data.map((data)=>(
                 <tr key={data.id}>
                 <td>{id++}</td>
-                <td>{data.createdAt}</td>
+                <td>{new Date(data.createdAt).toLocaleDateString()}</td>
                 <td>{data.product.name}</td>
-                <td>{data.quantity}</td>
-                <td>{data.price}</td>
+                <td>{data.batchcode  }</td>
+                <td>{data.purchase_Qty}</td>
+                <td>{data.purchase_Price}</td>
+                <td>{data.soldQty}</td>
                 <td>{data.supplier.name}</td>
                 <td>{data.user.firstName}</td>
                 <td>

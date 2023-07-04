@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState ,useEffect} from 'react';
 import { Form, Table, Button, Container, Row, Col } from 'react-bootstrap';
 import SearchTableResults from './searchTableResults';
 import SearchForm from './searchForm';
@@ -12,6 +12,8 @@ const Index = () => {
   const [amount, setAmount] = useState(0);
   const [balance, setBalance] = useState(0);
   const [isSearching, setIsSearching] = useState(false);
+  const styles={width:'4rem',height:'4rem'}
+  // const [noResults, setNoResults] = useState(false)
   const [values, setValues] = useState({
     sell_date: '',
     customer_name: '',
@@ -22,6 +24,7 @@ const Index = () => {
     id: '',
     qty: 0,
     price: 0,
+    total_items:0
   });
 
   const handleValueChanges = (event) => {
@@ -30,11 +33,10 @@ const Index = () => {
 
     if (name === 'amount') {
       setAmount(Number(value));
-      const balanceValue = calculateTotalSubtotal() - Number(value);
+      const balanceValue = calculateTotalCost() - Number(value);
       setBalance(balanceValue);
     }
   };
-
   const [showModal, setShowModal] = useState(false);
   const openModal = () => {
     if (selectedProducts.length > 0) {
@@ -49,73 +51,120 @@ const Index = () => {
   const handleSearchInputChange = (event) => {
     setSearchTerm(event.target.value);
   };
-
-  const handleQuantityChange = (event, productId) => {
-    const quantity = Number(event.target.value);
-    setSelectedProducts((prevProducts) =>
-      prevProducts.map((product) =>
-        product.id === productId ? { ...product, quantity, subTotal: product.price * quantity } : product
-      )
-    );
-  };
-
-  const handlePriceChange = (event, productId) => {
-    const { value } = event.target;
-    let updatedValue = value === "0" ? "" : value; // Check if the value is "0" and update accordingly
   
-    updateProductPrice(productId, updatedValue);
-  };
-
-  const updateProductPrice = (productId, newPrice) => {
-    // Find the product in your data/state using the productId
-    const updatedProducts = selectedProducts.map((product) => {
-      if (product.id === productId) {
-        return {
+  const handleQuantityChange=(e,p_id)=>{
+      const qty=Number(e.target.value);
+      setSelectedProducts((currentproducts)=>currentproducts.map((product)=>{
+         const updatedpurhaselist= product.purchases.map((purchase)=>{
+             if(purchase.id===p_id){
+              return {
+                ...purchase,
+                purchase_Qty:qty,
+              };
+             }
+             return purchase;
+         });
+         return{
           ...product,
-          price: newPrice,
-        };
-      }
-      return product;
-    });
+          purchases:updatedpurhaselist
+         }
+      }));
+      setValues((prev)=>({
+        ...prev,
+        total:calculateTotalSubtotal()
+      }));
+  }
   
-    // Update the selectedProducts state or data with the updated products
-    setSelectedProducts(updatedProducts); // Replace setSelectedProducts with the appropriate function to update your state or data
+  const handlePriceChange=(e,purchase_id)=>{
+    const updatedPrice=e.target.value;
+    setSelectedProducts((previousProducts)=>previousProducts.map((products)=>{
+        const newPruchaseList= products.purchases.map((purchase)=>{
+            if(purchase.id===purchase_id){
+              return {
+                ...purchase,
+                purchase_Price:updatedPrice,
+              }
+            }
+            return purchase;
+        });
+        return {
+          ...products,
+          purchases:newPruchaseList
+        }
+    }));
+  }
+ 
+  const calculateRowTotal = (purchaseId) => {
+    const product = selectedProducts.find((product) =>
+      product.purchases.find((purchase) => purchase.id === purchaseId)
+    );
+    if (product) {
+      const purchase = product.purchases.find((purchase) => purchase.id === purchaseId);
+      const rowTotal = purchase.purchase_Qty * purchase.purchase_Price;
+      return rowTotal;
+    }
+    return 0; // or any default value if the purchase is not found
   };
   
-  const calculateSubtotal = (product) => {
-    return product.price * product.quantity;
-  };
 
+  const calculateTotalCost = () => {
+    let totalCost = 0;
+    selectedProducts.forEach((product) => {
+      product.purchases.forEach((purchase) => {
+        const rowTotal = calculateRowTotal(purchase.id);
+        totalCost += rowTotal;
+      });
+    });
+    return totalCost;
+  };
+  
+  const calculateTotalQuantity = () => {
+    return selectedProducts.reduce((inittotal, product) => {
+      const productTotalQuantity = product.purchases.reduce(
+        (initial, purchase) => initial + purchase.purchase_Qty,
+        0
+      );
+      return inittotal + productTotalQuantity;
+    }, 0);
+  };
 
   const handleAddProduct = (product) => {
-    setSelectedProducts([...selectedProducts, { ...product, quantity: 0, subTotal: 0 }]);
+    const newProduct = {
+      ...product,
+      total: 0,
+      totalItems: 0,
+      subTotal: 0,
+      qty: 0,
+      price: 0,
+    };
+    setSelectedProducts([...selectedProducts, newProduct]);
   };
-
-  const handleRemoveProduct = (productId) => {
-    setSelectedProducts(selectedProducts.filter((product) => product.id !== productId));
-  };
-
-  const calculateTotalQuantity = () => {
-    return selectedProducts.reduce((total1, product1) => total1 + product1.quantity, 0);
+  
+  const handleRemoveProduct = (purchaseId) => {
+    setSelectedProducts((prevProducts)=>prevProducts.map((product)=>({
+      ...product,
+      purchases:product.purchases.filter((purchase)=>purchase.id !==purchaseId)
+    })));
   };
 
   const calculateTotalSubtotal = () => {
-    return selectedProducts.reduce((total, product) => total + (product.price * product.quantity), 0);
+      // const totalItems=calculateTotalQuantity();
   };
-
-  const handleSearchFormSubmit = async (event) => {
+  
+   const handleSearchFormSubmit = async (event) => {
     event.preventDefault();
     if (searchTerm.trim() !== '') {
       setIsSearching(true);
       try {
-        const response = await fetch(`http://localhost:8000/products/search?searchTerm=${searchTerm}`);
+        const response = await fetch(
+          `http://localhost:8000/products/search?searchTerm=${searchTerm}`
+        );
         if (response.ok) {
           const result = await response.json();
-          if (result.data.length > 0) {
-            setSearchResults(result.data);
-          } else {
-            throw new Error('No matching products found');
-          }
+          setSearchResults(result.data);
+
+          // Show the error message if no data is found
+          // setNoResults(result.data.length === 0);
         } else {
           throw new Error('Failed to fetch search results');
         }
@@ -137,6 +186,7 @@ const Index = () => {
       });
     }
   };
+
   
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -144,19 +194,22 @@ const Index = () => {
       sell_date: values.sell_date,
       customer_name: values.customer_name,
       payment_mode: values.payment_mode,
-      total: calculateTotalSubtotal(),
+      total: calculateTotalCost(),
       totalItems: calculateTotalQuantity(),
       amt: amount,
       balance: balance,
-      products: selectedProducts.map((product) => ({
-        id: product.id,
-        name: product.name,
-        quantity: product.quantity,
-        price: product.price,
-        subTotal: product.subTotal,
-      })),
+      products:selectedProducts.map((product)=>({
+        id:product.id,
+        name:product.name,
+          purchases: product.purchases.map((purchase)=>({
+            quantity: purchase.purchase_Qty,
+                price: purchase.purchase_Price,
+                subTotal:calculateRowTotal(purchase.id),
+                purchaseId:purchase.id
+          }))
+      }))
+
     };
-  
     try {
       const response = await axios.post('http://localhost:8000/sales', formData);
       swal({
@@ -174,7 +227,7 @@ const Index = () => {
         customer_name: '',
         payment_mode: '',
         total: 0,
-        totalItems: 0,
+        totalItems:0,
         subTotal: 0,
         id: '',
         qty: '',
@@ -192,6 +245,18 @@ const Index = () => {
     }
   };
   
+  // useEffect(()=>{
+  //    const delay= setTimeout(()=>{
+
+  //     handleSearchFormSubmit()
+  //    },500);
+
+  //    return () => {
+  //     clearTimeout(delay);
+  //   };
+  // },[])
+
+ 
   return (
     <Container>
     <Row style={{ marginBottom: '10px' }}>
@@ -201,14 +266,21 @@ const Index = () => {
           handleSearchInputChange={handleSearchInputChange}
           searchTerm={searchTerm}
         />
-
-        {searchResults.length > 0 && (
-          <SearchTableResults
-            isSearching={false} // Update the value here as per your logic
-            handleAddProduct={handleAddProduct}
-            searchResults={searchResults}
-          />
-        )}
+        {isSearching ? (
+            <div className='d-flex justify-content-center'>
+              <div className='spinner-border animate-spin' style={styles}>
+                <span >Loading...</span>
+              </div>
+            </div>
+          ) : searchResults.length >0 ? (
+            <SearchTableResults
+              handleAddProduct={handleAddProduct}
+              searchResults={searchResults}
+            />
+          ) : (
+            <div className='error-message'>No search results found</div>
+           
+          )}
       </Col>
 
       <Col md={7}>
@@ -219,46 +291,48 @@ const Index = () => {
                 <th>Product Name</th>
                 <th>Price</th>
                 <th>Qty</th>
-                <th>Subtotal</th>
+                <th>Subtotal1</th>
               </tr>
             </thead>
             <tbody>
               {selectedProducts.map((product) => (
-                <tr key={product.id}>
-                  <td>{product.name}</td>
-                  <td>
-                    <Form.Control
-                      type="number"
-                      min="0"
-                      value={product.price}
-                      onChange={(event) => handlePriceChange(event, product.id)}
-                    />
-                  </td>
-                  <td>
-                    <Form.Control
-                      type="number"
-                      min="0"
-                      value={product.quantity}
-                      onChange={(event) => handleQuantityChange(event, product.id)}
-                    />
-                  </td>
-                  <td>
-                    <Form.Control
-                      type="number"
-                      value={calculateSubtotal(product)}
-                      name="total"
-                      readOnly
-                    />
-                  </td>
-                  <td>
-                    <Button
-                      variant="danger"
-                      onClick={() => handleRemoveProduct(product.id)}
-                    />
-                  </td>
-                </tr>
+                   product.purchases.map((purchase)=>(
+                    <tr key={`${purchase.id}`}>
+                    <td>{purchase.batchcode}</td>
+                    <td>
+                      <Form.Control
+                        type="number"
+                        value={purchase.purchase_Price}
+                        onChange={(event) => handlePriceChange(event, purchase.id)}
+                      />
+                    </td>
+                    <td>
+                      <Form.Control
+                        type='number'
+                        value={purchase.purchase_Qty}
+                        onChange={(event) => handleQuantityChange(event, purchase.id)}
+                      />
+                    </td>
+                    <td>
+                      <Form.Control
+                        type="number"
+                        value={calculateRowTotal(purchase.id)}
+                        name="total"
+                        onChange={handleValueChanges}
+                         
+                      />
+                    </td>
+                    <td>
+                      <Button
+                        variant="danger"
+                        onClick={() => handleRemoveProduct(purchase.id)}
+                      />
+                    </td>
+                  </tr>
+                   ))
               ))}
             </tbody>
+
             <tfoot>
               <tr style={{ marginBottom: '10px' }}>
                 <td>Total Items</td>
@@ -272,7 +346,7 @@ const Index = () => {
                 <td>Total Cost</td>
                 <td>
                   <Form.Control
-                    value={calculateTotalSubtotal()}
+                    value={calculateTotalCost()}
                     name="total"
                     onChange={handleValueChanges}
                     readOnly
@@ -350,26 +424,28 @@ const Index = () => {
               </thead>
               <tbody>
                 {selectedProducts.map((product) => (
-                  <tr key={product.id}>
+                   product.purchases.map((purchase)=>(
+                    <tr key={`${product.id} ${purchase.id}`}>
                     <td>
                       <Form.Control value={product.name} name="name" onChange={handleValueChanges}   />
                     </td>
                     <td>
-                      <Form.Control value={product.quantity} name="qty" onChange={handleValueChanges}  />
+                      <Form.Control value={purchase.purchase_Qty} name="qty" onChange={handleValueChanges}  />
                     </td>
                     <td  >
-                      <Form.Control value={product.price} name="price" onChange={handleValueChanges}  />
+                      <Form.Control value={purchase.purchase_Price} name="price" onChange={handleValueChanges}  />
                     </td>
                     <td>
-                      <Form.Control value={product.subTotal} name="total" onChange={handleValueChanges} />
+                      <Form.Control value={calculateRowTotal(purchase.id)} name="total" onChange={handleValueChanges} />
                     </td>
                   </tr>
+                   ))
                 ))}
               </tbody>
               <tfoot>
                 <tr>
                 <td >
-                <Form.Label>Total Cost</Form.Label> <Form.Control defaultValue={calculateTotalSubtotal()} readOnly />
+                <Form.Label>Total Cost</Form.Label> <Form.Control defaultValue={calculateTotalCost()} readOnly />
                 </td>
                 <td>
                   <Form.Label>Paid</Form.Label>

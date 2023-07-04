@@ -14,17 +14,27 @@ export class Purchases{
     @ManyToOne(() => Supplier, supplier => supplier.purchases)
     supplier!: Supplier;
    
-
     @ManyToOne(() => User, user => user.purchases)
     user!: User;
   
     @Column({ type: 'int' })
-    quantity!: number;
+    purchase_Qty!: number;
   
     @Column({ type: 'decimal', precision: 10, scale: 2 })
-    price!: number;
+    purchase_Price!: number;
+    
+    @Column({ type: 'decimal', precision: 10, scale: 2, default:0.00 })
+    sale_Price!:number;
+    
     @Column()
-     total!:number;
+     purchase_Total!:number;
+     
+    @Column({default:0})
+      soldQty!:number;
+
+    @Column()
+      batchcode!:string;
+
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     createdAt!: Date;
   

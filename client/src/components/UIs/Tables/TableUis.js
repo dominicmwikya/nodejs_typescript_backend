@@ -67,10 +67,7 @@ import { Table } from 'react-bootstrap';
             <div className='col'>
               <div className='table-responsive'>
                 
-                  <i class="fa fa-plus" aria-hidden="true" onClick={showModal} 
-                    style={{color:"green", color:'white', backgroundColor:'green',
-                    margin: '10px 0px', borderRadius:'5px', padding:'10px 40px'}}>
-                 </i>
+                
                   <Table className={className}>
                     {renderHeader()}
                     {renderBody()}

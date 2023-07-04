@@ -6,7 +6,7 @@ import TableUI from '../../components/UIs/Tables/TableUis';
 import { useAddProductAPI, useDeleteProductAPI, useFetchProductAPI, useGetProductEdit,useProductUpdate } from '../../appAPIs/productAPIs';
 import { ProductForm } from './product_form';
 import { EditProductForm } from './edit_product_form';
-import { Container,Row,Col } from 'react-bootstrap';
+import { Container,Row,Col, Button } from 'react-bootstrap';
 
 export default function Item() {
   const [show, setShow] = useState(false);
@@ -186,6 +186,14 @@ export default function Item() {
   }
   return (
     <Container>
+      <Row>
+         <Col md={2}>
+         <i class="fa fa-plus" aria-hidden="true" onClick={showModal} 
+                    style={{color:"green", color:'white', backgroundColor:'green',
+                    margin: '10px 0px', borderRadius:'5px', padding:'10px 40px'}}>
+                 </i>
+        </Col>
+      </Row>
       <Row>
         <Col md={9}>
             <TableUI

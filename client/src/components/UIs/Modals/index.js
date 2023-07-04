@@ -18,3 +18,4 @@ const index=({show, header, children,onClose, size})=> {
 }
 
 export default index;
+

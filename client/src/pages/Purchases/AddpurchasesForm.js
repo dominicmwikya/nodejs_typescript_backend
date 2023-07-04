@@ -1,65 +1,80 @@
 import React from 'react';
-import { Row, Col, Form, Button } from 'react-bootstrap';
+import { Form, Button, Container } from 'react-bootstrap';
 
 export default function AddPurchasesForm({ formData, handleSubmit, handleInputChange, products, removeRow, addRow }) {
   return (
-    <div>
+    <Container>
       <Form onSubmit={handleSubmit}>
         {formData.map((item, index) => (
-          <div key={index} className="mb-3">
-            <Row>
-              <Col>
-                <Form.Select
-                  name="productId"
-                  value={item.productId}
-                  onChange={(event) => handleInputChange(index, event)}
-                >
-                  <option value="">Select Product</option>
-                  {products.map((product) => {
-                    return (
-                      <option key={product.id} value={product.id}>{product.name}</option>
-                    )
-                  })}
-                </Form.Select>
-              </Col>
-              <Col>
-                <Form.Select
-                  name="supplierId"
-                  value={item.supplierId}
-                  onChange={(event) => handleInputChange(index, event)}
-                >
-                  <option value="">Select Supplier</option>
-                  <option value="1">Supplier 1</option>
-                  <option value="2">Supplier 2</option>
-                </Form.Select>
-              </Col>
-              <Col xs={4} md={2}>
-                <Form.Control
-                  type="number"
-                  name="quantity"
-                  value={item.quantity}
-                  onChange={(event) => handleInputChange(index, event)}
-                  placeholder="Quantity"
-                />
-              </Col>
-              <Col xs={4} md={2}>
-                <Form.Control
-                  type="number"
-                  name="price"
-                  value={item.price}
-                  onChange={(event) => handleInputChange(index, event)}
-                  placeholder="Price"
-                />
-              </Col>
-              <Col>
-                <Button type="button" className="btn btn-danger" onClick={() => removeRow(index)}>-</Button>
-              </Col>
-            </Row>
+          <div key={index} className="d-flex align-items-center mb-3">
+            <Form.Select
+              className="me-3"
+              name="productId"
+              value={item.productId}
+              onChange={(event) => handleInputChange(index, event)}
+            >
+              <option value="">Select Product</option>
+              {products.map((product) => (
+                <option key={product.id} value={product.id}>{product.name}</option>
+              ))}
+            </Form.Select>
+            <Form.Select
+              className="me-3"
+              name="supplierId"
+              value={item.supplierId}
+              onChange={(event) => handleInputChange(index, event)}
+            >
+              <option value="">Select Supplier</option>
+              <option value="1">Supplier 1</option>
+              <option value="2">Supplier 2</option>
+            </Form.Select>
+            <Form.Control
+              type="number"
+              className="me-3"
+              name="quantity"
+              value={item.quantity}
+              onChange={(event) => handleInputChange(index, event)}
+              placeholder="Quantity"
+            />
+            <Form.Control
+              type="number"
+              className="me-3"
+              name="price"
+              value={item.price}
+              onChange={(event) => handleInputChange(index, event)}
+              placeholder="Purchase Price"
+            />
+            <Form.Control
+              type="number"
+              className="me-3"
+              name="sprice"
+              value={item.sprice}
+              onChange={(event) => handleInputChange(index, event)}
+              placeholder="Sale Price"
+            />
+            {index !== 0 && (
+              <Button
+                type="button"
+                variant="danger"
+                className="me-3"
+                onClick={() => removeRow(index)}
+              >
+                -
+              </Button>
+            )}
+            {index === formData.length - 1 && (
+              <Button type="button" variant="success" onClick={addRow}>
+                +
+              </Button>
+            )}
           </div>
         ))}
-        <Button type="button" className="btn btn-success me-3" onClick={addRow}>+ ROW</Button>
-        <Button type="submit" className="btn btn-secondary">Submit</Button>
+        <div className="d-flex justify-content-end">
+          <Button type="submit" variant="secondary">
+            Submit
+          </Button>
+        </div>
       </Form>
-    </div>
+    </Container>
   );
 }

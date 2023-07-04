@@ -9,4 +9,5 @@ export default interface PaginationOptions {
   order?: object;
   where?: object;
   relations?: string[];
+  orderBy?:string;
 }

@@ -5,11 +5,16 @@ import ProductInterface from '../../interfaces/product';
 import { Pagination } from '../../helpers/pagination'
 import PaginationOptions from '../../interfaces/paginationOptions'
 import PaginationData from '../../interfaces/PaginationData';
+import { Purchases } from '../entities/purchases.entity';
+import {InsertHelper} from '../Repositories/InsertHelper'
 import { ILike } from 'typeorm';
 const product = new Product();
+const proRepo= databaseConfig.getRepository(Product);
+   const insertDataObj= new InsertHelper<Product>(proRepo);
 export class ProductRepository {
   private static ProductRepo = databaseConfig.getRepository(Product);
   private static UserRepo = databaseConfig.getRepository(User);
+  private static PurchasesRepo= databaseConfig.getRepository(Purchases);
   /**
 * Creates a new product.
 * @param {Object} data - The data for the new product.
@@ -40,8 +45,9 @@ export class ProductRepository {
       product.min_qty = min_qty;
       product.category = category;
       product.users = user;
-
-      await this.ProductRepo.save(product);
+      // const insertDataObj= new InsertHelper<Product>(this.ProductRepo);
+      await insertDataObj.insertDataMethod(product);
+      // await this.ProductRepo.save(product);
       return {
         message: `Product ${name} added successfully`,
         code: 1,
@@ -83,7 +89,13 @@ export class ProductRepository {
     const result = await Pagination(this.ProductRepo, options);
     return result;
   }
-
+  
+  static getEditProduct=async(id:number)=>{
+         const result= new InsertHelper<Product>(this.ProductRepo);
+         const product= await result.FetchEditProduct();
+         return product;
+  }
+  
   static FetchEditProduct = async (id: number): Promise<Product | null> => {
     const product = await this.ProductRepo.findOne({ where: { id: id } });
     return product || null;
@@ -128,18 +140,36 @@ export class ProductRepository {
   }
   
 
-  static async  findByTerm(searchTerm:string):Promise<Product[]>{
+  static async getProductByName(name: string): Promise<Product[]> {
+    const productsWithPurchases: Product[] = [];
     try {
-      const products = await this.ProductRepo.find({
+      const purchases = await this.PurchasesRepo.find({
         where: {
-          name: ILike(`${searchTerm}%`), flag:0
+          batchcode: ILike(`${name}%`),
         },
       });
-     return products;
-    } catch (error:any) {
-        throw new Error('Error fetching products:'+ error)
+  
+      for (const purchase of purchases) {
+        try {
+          const product = await this.ProductRepo.findOne({
+            relations: ['purchases'],
+            where: { purchases: { id: purchase.id } },
+          });
+  
+          if (product) {
+            productsWithPurchases.push(product);
+          }
+        } catch (error) {
+          console.error('Error fetching product:', error);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching purchases:', error);
     }
+    return productsWithPurchases;
   }
+  
+  
   
   static async updateQTY(idd:number, qtyy:number){
      const response=  await this.ProductRepo.update({id:idd }, {qty:qtyy});

@@ -9,7 +9,7 @@ export async function Pagination<T extends ObjectLiteral>(
 
   const updatedWhere=search?{...where, ...search}:where;
 
-  const queryOptions: FindManyOptions<T> = { take, skip, order, where:updatedWhere, relations };
+  const queryOptions: FindManyOptions<T> = { take, skip, order, where:updatedWhere, relations, };
   const [result, total] = await repository.findAndCount(queryOptions);
   const take1 = take ?? 1;
   const skip1 = skip ?? 0;

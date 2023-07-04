@@ -20,7 +20,11 @@ export class ProductController{
            });
         }
     }
-    
+  static async testHelper(id:number){
+       const r= await ProductRepository.getEditProduct(id);
+       console.log(r)
+       return r;
+  }
   static async getProducts(req:Request, res: Response) {
       try {
         const products = await ProductRepository.FetchProducts();
@@ -105,10 +109,10 @@ export class ProductController{
       } 
   }
 
-  static async getProductsBySearchTerm(req: Request, res: Response){
+  static async findProductByName(req: Request, res: Response){
     const searchTerm = req.query.searchTerm as string || '';
     try {
-      const data = await ProductRepository.findByTerm(searchTerm);
+      const data = await ProductRepository.getProductByName(searchTerm);
         RequestHandlers.handleRequestSuccess(res, 200)({
           data
         })

@@ -6,12 +6,12 @@ import axios from 'axios';
 import swal from 'sweetalert'
 import Modal from '../../components/UIs/Modals/index';
 function StockForm(){
-  const [formData, setFormData] = useState([{ productId: '', price: '', quantity:'', supplierId: '' }]);
+  const [formData, setFormData] = useState([{ productId: '', price: '', quantity:'', supplierId: '',sprice:"" }]);
   const[products, setItems]=useState([]);
   const[suppliers, setSupplier]=useState([]);
   const { fetchProduct } = useFetchProductAPI();
   const addRow = () => {
-    setFormData([...formData, { productId: '', price: '',quantity:'', supplierId: '' }]);
+    setFormData([...formData, { productId: '', price: '',quantity:'', supplierId: '',sprice:"" }]);
   };
   const [show, setShow] = useState(false);
   const showModal = () => setShow(true);
@@ -56,7 +56,7 @@ function StockForm(){
            timer:3500,
            icon:'success'
        }).then(()=>{
-        setFormData([{ productId: '', price: '',quantity:'', supplierId: '' }]);
+        setFormData([{ productId: '', price: '',quantity:'', supplierId: '',sprice:"" }]);
         closeModal();
        })
     }else{

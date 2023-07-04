@@ -7,55 +7,86 @@ import { databaseConfig } from "../database/dbconfig";
 import RequestHandlers from "../database/RequestHandlers";
 import PaginationOptions from '../interfaces/paginationOptions';
 import { ProductRepository } from "../database/Repositories/Product.respository";
+import { PurchaseRepository } from "../database/Repositories/Purchases.repository";
+import { Purchases } from "../database/entities/purchases.entity";
 import { Like} from 'typeorm';
  const ProductRepo= databaseConfig.getRepository(Product);
  const SalesRepository1= databaseConfig.getRepository(Sale);
+ const PurchaseRepo= databaseConfig.getRepository(Purchases);
   export class salesController{
     static async createSale(req: Request, res: Response) {
-      const productsData = req.body.products;
+      const productsData = req.body;
       const { sell_date, customer_name, payment_mode } = req.body;
       try {
-        for (const product of productsData) {
-          const { id, quantity, price, subTotal } = product; 
-          const productExists = await ProductRepo.findOne({ where: { id: id} });
-          if(productExists){
-             if(quantity<=productExists.qty){
-              const salesSuccess = await SalesRepository.RegisterSale(customer_name, quantity,price,subTotal,sell_date,id,payment_mode);
-              if(salesSuccess){
-                  const newProductQty= productExists.qty-quantity;
-                  productExists.qty= newProductQty;
-                  await ProductRepository.updateQTY(id, productExists.qty);
-                 if(product===productsData[productsData.length-1]){
-                  RequestHandlers.handleRequestSuccess(res, 200)({
-                    message: "Sale Record Created successfully",
-                  });
-        
-                 }
-              }else{
-                if (product === productsData[productsData.length - 1]) {
-                  RequestHandlers.handlRequestFailure(res, 404)({
-                    error: "Failed to create sales Records",
+        for (const product of productsData.products) {
+          const productId = product.id;
+          const productName = product.name;
+          // Loop through purchases
+          for (const purchase of product.purchases) {
+            const quantity = purchase.quantity;
+            const price = purchase.price;
+            const subTotal = purchase.subTotal;
+            const p_id = purchase.purchaseId;
+            const productExists = await ProductRepo.findOne({ where: { id: productId } });
+            if (productExists) {
+              if (quantity <= productExists.qty) {
+                const purchaseExists = await PurchaseRepo.findOne({ where: { id: p_id } });
+                if (purchaseExists) {
+                  const purchaseBalance = purchaseExists.purchase_Qty - purchaseExists.soldQty;
+                  if (purchaseExists.purchase_Qty === purchaseExists.soldQty || quantity > purchaseBalance) {
+                    return RequestHandlers.handlRequestFailure(res, 404)({
+                      error: `INSUFFICIENT QUANTITY FOR ${productName} to sale ${quantity} items`,
+                    });
+                  } else {
+                    const salesSuccess = await SalesRepository.RegisterSale(
+                      customer_name,
+                      quantity,
+                      price,
+                      subTotal,
+                      sell_date,
+                      productId,
+                      payment_mode
+                    );
+                    if (salesSuccess) {
+                      const newProductQty = productExists.qty - quantity;
+                      productExists.qty = newProductQty;
+                      await ProductRepository.updateQTY(productId, newProductQty);
+    
+                      const purchaseQtySold = purchaseExists.soldQty + quantity;
+                      await PurchaseRepository.updatePurchaseQty(p_id, purchaseQtySold);
+                      return RequestHandlers.handleRequestSuccess(res, 200)({
+                        data: 'Sale Record created successfully! Thank you',
+                      });
+                    } else {
+                      return RequestHandlers.handlRequestFailure(res, 404)({
+                        error: 'Failed to create sales records',
+                      });
+                    }
+                  }
+                } else {
+                  return RequestHandlers.handlRequestFailure(res, 404)({
+                    error: `${p_id} DOES NOT EXIST IN PURCHASES`,
                   });
                 }
+              } else {
+                return RequestHandlers.handlRequestFailure(res, 404)({
+                  error: `${productName} INSUFFICIENT QUANTITY TO SALE ${quantity} UNITS`,
+                });
               }
-             }else{
-              RequestHandlers.handlRequestFailure(res, 400)({
-                error: "Insufficient product quantity for "+productExists.name,
+            } else {
+              return RequestHandlers.handlRequestFailure(res, 404)({
+                error: `${productName} NOT FOUND`,
               });
-              return;
-             }
-          }else{
-              RequestHandlers.handlRequestFailure(res, 404)({
-                error:"Product Not Found"
-              })
-            }   
+            }
+          }
         }
-      } catch (error:any) {
-        RequestHandlers.handlRequestFailure(res, 500)({
-          error:""+error
-        })
+      } catch (error: any) {
+        return RequestHandlers.handlRequestFailure(res, 500)({
+          error: `${error}`,
+        });
       }
     }
+    
     
     static sales=async(req:Request, res:Response)=>{
       const {sortBy, orderBy, searchValue, searchColumn, take, skip} = req.query;

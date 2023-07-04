@@ -5,7 +5,8 @@ import {Product} from './entities/Product.entity'
 import {Profile} from './entities/Profile.entity';
 import {Supplier} from './entities/Supplier.entity';
 import {Purchases} from './entities/purchases.entity';
-import {Sale} from './entities/sales.entity'
+import {Sale} from './entities/sales.entity';
+import {BatchNumbers} from './entities/BatchNo.entity';
 import 'reflect-metadata';
 export const databaseConfig = new DataSource({
     type: "mysql",
@@ -16,7 +17,7 @@ export const databaseConfig = new DataSource({
     database: "typedb",
     synchronize: true,
     logging: true,
-    entities: [User,Role, Product,Profile,Supplier,Purchases, Sale], 
+    entities: [User,Role, Product,Profile,Supplier,Purchases, Sale, BatchNumbers], 
     cache:true
 })
 
