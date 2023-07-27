@@ -1,17 +1,21 @@
-import React, {useState, useEffect} from 'react'
+import React, { useState, useEffect, useContext } from 'react';
 import Receives from './index';
 import { Container, Row, Col } from 'react-bootstrap';
+import { AuthContext } from '../../ContextAPI/authContextAPI';
+import { useNavigate } from 'react-router-dom';
+
 export default function Users() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [data, setData] = useState([]);
-
-  const [take, setTake]=useState(5);
-  const skip = (currentPage-1)*take;
+  const [take, setTake] = useState(5);
+  const skip = (currentPage - 1) * take;
+  const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchData(currentPage);
-}, [currentPage, take, skip]);
+  }, [currentPage, take, skip]);
 
   const handleTakeChange = (event) => {
     const newTake = parseInt(event.target.value);
@@ -31,12 +35,17 @@ export default function Users() {
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
-  
+
+  if (!user.authState) {
+    navigate('/login');
+    return null;
+  }
+
   return (
     <Container>
       <Row>
         <Col>
-            <Receives   
+          <Receives
             take={take}
             handlePageChange={handlePageChange}
             handleTakeChange={handleTakeChange}
@@ -44,7 +53,7 @@ export default function Users() {
             data={data}
             totalPages={totalPages}
             currentPage={currentPage}
-        />
+          />
         </Col>
       </Row>
     </Container>

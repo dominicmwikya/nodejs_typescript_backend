@@ -14,12 +14,15 @@ import PurchaseList from './pages/Purchases/purchaseList';
 import AddSupplier from './pages/Suppliers/AddSupplier';
 import SupplierList from './pages/Suppliers/index';
 import Pos from './pages/pos/index';
-import Sales from './pages/Sales';
+import Sales from './pages/Sales'
 import DailySalesSummary from './pages/Sales/dailySummary';
+import ErrorBoundary   from './components/ErrorBoundary'
 function App() {
   return (
+   
     <div className="App">
-      <Navbar1 />
+        <ErrorBoundary>
+        <Navbar1 />
       <Routes>
             <Route path='*' element={<NotFound/>} />
             <Route path ='/' element={<Home />} />
@@ -35,8 +38,8 @@ function App() {
             <Route path='/pos' element={<Pos/>} />
             <Route path='/sales' element={<Sales/>} />
             <Route path ='/dailysales' element={<DailySalesSummary/>} />
-
         </Routes>
+        </ErrorBoundary>
     </div>
   );
 }

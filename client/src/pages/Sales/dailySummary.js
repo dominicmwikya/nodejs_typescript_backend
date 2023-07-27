@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Container, Row, Col, Pagination, Card, Table, Form, Button } from 'react-bootstrap';
+import { AuthContext } from '../../ContextAPI/authContextAPI';
+import { useNavigate } from 'react-router-dom';
 
 export const DailySalesSummary = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -13,6 +15,8 @@ export const DailySalesSummary = () => {
   const [data, setData] = useState([]);
   const [totalRevenue, setRevenue] = useState(0);
   const takeOptions = [2, 5, 10, 25, 50, 100, 200];
+  const {user} = useContext(AuthContext);
+  const navigate = useNavigate();
 
   const handleDateChange = (event) => {
     setSearchDates((prevState) => ({
@@ -65,7 +69,11 @@ export const DailySalesSummary = () => {
     setTake(newTake);
     setCurrentPage(1);
   };
+ if (!user.authState){
+  navigate('/login');
 
+  return null;
+ }
   return (
     <Container>
       <Row>

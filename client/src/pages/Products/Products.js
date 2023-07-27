@@ -6,61 +6,71 @@ import TableUI from '../../components/UIs/Tables/TableUis';
 import { useAddProductAPI, useDeleteProductAPI, useFetchProductAPI, useGetProductEdit,useProductUpdate } from '../../appAPIs/productAPIs';
 import { ProductForm } from './product_form';
 import { EditProductForm } from './edit_product_form';
-import { Container,Row,Col, Button } from 'react-bootstrap';
+import { Container,Row,Col} from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 
 export default function Item() {
   const [show, setShow] = useState(false);
   const showModal = () => setShow(true);
   const closeModal = () => setShow(false);
-
-  const[editshow, setEditShow]=useState(false);
-  const showEditModal= ()=>setEditShow(true);
-  const closeEditModal=()=>setEditShow(false);
-  
-  const [items, setItems] = useState([]);
+  const [editshow, setEditShow] = useState(false);
+  const showEditModal = () => setEditShow(true);
+  const closeEditModal = () => setEditShow(false);
+  const navigate = useNavigate();
   const { user } = useContext(AuthContext);
-  const [userId, setUserId] = useState('');
-  const [values, setValues] = useState({
-    name: '',
-    category: '',
-    min_qty: '',
-    unit: '',
-    description: ''
+
+  const [itemState, setItemState] = useState({
+    items: [],
+    values: {
+      name: '',
+      category: '',
+      min_qty: '',
+      unit: '',
+      description: ''
+    },
+    editValues: {
+      name: '',
+      category: '',
+      min_qty: '',
+      unit: '',
+      description: ''
+    }
   });
-  const [editValues, setEditValues]=useState({
-    name: '',
-    category: '',
-    min_qty: '',
-    unit: '',
-    description: ''
-  })
+
   const { addProduct } = useAddProductAPI();
   const { fetchProduct } = useFetchProductAPI();
   const { deleteProduct } = useDeleteProductAPI();
-  const{fetchEditProduct}=useGetProductEdit();
-  const{updateProductDetails}=useProductUpdate();
+  const { fetchEditProduct } = useGetProductEdit();
+  const { updateProductDetails } = useProductUpdate();
+  
   const fetchItems = useCallback(async () => {
-    const records = await fetchProduct();
-    setItems(records.data.products);
-  },[])
-
+    try {
+      await fetchProduct(user.role, setItemState);
+    } catch (error) {
+      console.log(error);
+      // Handle the error case here.
+    }
+  }, [user.role]);
+  
   useEffect(() => {
-    setUserId(user.id);
     fetchItems();
-  }, [fetchItems, user.id]);
+  }, [fetchItems, user]);
 
-
-  const handleEdit =async (id) => {
+  const handleEdit = async (id) => {
     try {
       const editResult= await fetchEditProduct(id);
-      setEditValues(editResult.data.producteditResult[0]);
+      setItemState(prevState => ({
+        ...prevState,
+        editValues: editResult.data.producteditResult[0]
+      }));
       showEditModal();
     } catch (error) {
-       console.log(error)
+      console.log(error)
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id, role) => {
+    const token= localStorage.getItem('token');
     try {
       const confirm = await swal({
         title: 'Are you sure?',
@@ -71,7 +81,7 @@ export default function Item() {
       });
 
       if (confirm) {
-        const response = await deleteProduct(id);
+        const response = await deleteProduct(id, role, token);
         swal({
           text: response.message,
           title: 'SUCCESS!',
@@ -100,50 +110,54 @@ export default function Item() {
 
   const handleValueChange = (e) => {
     const { name, value } = e.target;
-    setValues(prevValues => ({
-      ...prevValues,
-      [name]: value
+    setItemState(prevState => ({
+      ...prevState,
+      values: {
+        ...prevState.values,
+        [name]: value
+      }
     }));
   };
 
-  const handleEditChange=e=>{
+  const handleEditChange = e => { 
     const { name, value } = e.target;
-    setEditValues(prevValues => ({
-      ...prevValues,
-      [name]: value
+    setItemState(prevState => ({
+      ...prevState,
+      editValues: {
+        ...prevState.editValues,
+        [name]: value
+      }
     }));
   }
 
-  const updateProduct=async(e)=>{
+  const updateProduct = async (e) => {
     e.preventDefault();
     try {
-      const updateResult= await updateProductDetails(editValues.id, editValues);
-      if(updateResult.data.data.error){
+      const updateResult = await updateProductDetails(itemState.editValues.id, itemState.editValues);
+      if (updateResult.data.data.error) {
         swal({
-          text:updateResult.data.data.error,
-          title:'ERROR!',
-          timer:3500,
-          icon:'warning'
+          text: updateResult.data.data.error,
+          title: 'ERROR!',
+          timer: 3500,
+          icon: 'warning'
         });
-      }
-      
-      else{
+      } else {
         swal({
-          text:updateResult.data.data.message,
-          title:'Update Successfull',
-          timer:3500,
-          icon:'success'
+          text: updateResult.data.data.message,
+          title: 'Update Successfull',
+          timer: 3500,
+          icon: 'success'
         });
         fetchItems();
         closeEditModal();
       }   
     } catch (error) {
-        console.log(error);
+      console.log(error);
     }
   }
 
   const createItem = async () => {
-    const response = await addProduct(values, userId);
+    const response = await addProduct(itemState.values, user.id);
 
     if (response.result && response.result.data) {
       swal({
@@ -162,13 +176,16 @@ export default function Item() {
         timer: 3500,
       });
     } else {
-      setValues({
-        name: '',
-        category: '',
-        min_qty: '',
-        unit: '',
-        description: ''
-      });
+      setItemState(prevState => ({
+        ...prevState,
+        values: {
+          name: '',
+          category: '',
+          min_qty: '',
+          unit: '',
+          description: ''
+        }
+      }));
       swal({
         text: response.data.message,
         title: 'Success',
@@ -184,11 +201,17 @@ export default function Item() {
     ev.preventDefault();
     createItem();
   }
+
+  if (!user.authState) {
+    navigate('/login');
+    return null;
+  }
+
   return (
     <Container>
       <Row>
          <Col md={2}>
-         <i class="fa fa-plus" aria-hidden="true" onClick={showModal} 
+         <i className="fa fa-plus" aria-hidden="true" onClick={showModal} 
                     style={{color:"green", color:'white', backgroundColor:'green',
                     margin: '10px 0px', borderRadius:'5px', padding:'10px 40px'}}>
                  </i>
@@ -197,7 +220,7 @@ export default function Item() {
       <Row>
         <Col md={9}>
             <TableUI
-              data={items}
+              data={itemState.items}
               _edit={handleEdit}
               _delete={handleDelete}
               showModal={showModal}
@@ -212,7 +235,7 @@ export default function Item() {
               footer="item modal">
               <ProductForm
                 handleValueChange={handleValueChange}
-                values={values}
+                values={itemState.values}
                 handleSubmit={handleSubmit}
                 />
             </Modal> 
@@ -221,7 +244,7 @@ export default function Item() {
                 show={editshow}
                 onClose={closeEditModal}>
                 <EditProductForm
-                  editValues={editValues}
+                  editValues={itemState.editValues}
                   updateProduct={updateProduct}
                   handleValueChange={handleEditChange}
                 />
@@ -231,4 +254,3 @@ export default function Item() {
     </Container>       
   ); 
 }
-

@@ -5,7 +5,7 @@ import { Like} from 'typeorm'
 import PaginationOptions from '../interfaces/paginationOptions'
 export class UserController {
   static async registerNewUser(req: Request, res: Response) {
-    const id = req.body.roleId;
+    const id = req.body.role;
     try {
       const user = await UserRespository.registerUser(req.body, id);
       RequestHandlers.handleRequestSuccess(res, 200)({

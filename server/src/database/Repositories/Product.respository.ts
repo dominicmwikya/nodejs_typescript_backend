@@ -12,6 +12,12 @@ const product = new Product();
 const proRepo= databaseConfig.getRepository(Product);
    const insertDataObj= new InsertHelper<Product>(proRepo);
 export class ProductRepository {
+
+  private readonly ProductRepo1;
+
+  constructor() {
+    this.ProductRepo1 = databaseConfig.getRepository(Product);
+  }
   private static ProductRepo = databaseConfig.getRepository(Product);
   private static UserRepo = databaseConfig.getRepository(User);
   private static PurchasesRepo= databaseConfig.getRepository(Purchases);
@@ -26,6 +32,8 @@ export class ProductRepository {
 * @returns {Promise<ApiResponse>} A response indicating whether the product was created successfully.
 * @throws {Error} If the product already exists or the user is not found.
 */
+
+
   static async CreateProduct({ name, min_qty, category }: ProductInterface, userId: number): Promise<Product | null | Object> {
     const productExists = await this.ProductRepo.findOneBy({ name });
     try {
@@ -175,6 +183,8 @@ export class ProductRepository {
      const response=  await this.ProductRepo.update({id:idd }, {qty:qtyy});
      return response;
   }
-
+   async testme(){
+      console.log("succes")
+   }
 }
 

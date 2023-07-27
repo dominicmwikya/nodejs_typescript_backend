@@ -1,54 +1,79 @@
 import React, { createContext, useState, useEffect } from 'react';
-import { useNavigate  } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+
 const AuthContext = createContext();
 
-function AuthProvider(props){
-    const navigate = useNavigate();
-     const [user, setUser]=useState({
-        email:'', authState:false, id:''
-     });
-     const AuthenticateToken = async () => {
-        const token = await localStorage.getItem('token');
-        try {
-            // Verify the access token
-            const result = await axios.get('http://localhost:8000/users/protected-route', {
-                headers: {
-                  Authorization: `Bearer ${token}`
-                }
-              });
-              setUser({name:result.data.name, email: result.data.usermail, id: result.data.id, authState: true });
-            return user;  
-          } catch (error) {
-              navigate('/login');
-              return error;
+function AuthProvider(props) {
+  const storedToken = localStorage.getItem('token');
+  const [user, setUser] = useState({
+    email: '',
+    authState: !!storedToken, // Set to true if there is a stored token, false otherwise
+    id: '',
+    role: ''
+  });
+
+  const authenticateToken = async () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        // Verify the access token
+        const result = await axios.get('http://localhost:8000/users/protected-route', {
+          headers: {
+            Authorization: `Bearer ${token}`
           }
-      };
-
-    const handleLogout = () => {
-        setUser({ email: '', id: '', authState: false });
-        localStorage.removeItem('token');
-          setUser({email:"",id:"",authState:false})
-          navigate('/login');
-      };
-
-      const auth = async () => {
-        try {
-          await AuthenticateToken();
-        } catch (error) {
-            return error;
+        });
+        if (result.data && result.data.usermail && result.data.id && result.data.role) {
+          setUser({
+            name: result.data.name,
+            email: result.data.usermail,
+            role: result.data.role,
+            id: result.data.id,
+            authState: true
+          });
+          return user;
+        } else {
+          // Invalid server response, log out the user
+          handleLogout();
+          return null;
         }
-      };
+      } catch (error) {
+        console.log(error);
+        // If there's an error, token might be invalid or expired, so clear it and log out the user
+        handleLogout();
+        return null;
+      }
+    } else {
+      // No token found, user is not authenticated
+      setUser({
+        email: '',
+        authState: false,
+        id: '',
+        role: ''
+      });
+    }
+  };
+  
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setUser({
+      email: '',
+      authState: false,
+      id: '',
+      role: ''
+    });
+  };
 
-     useEffect(() => {
-        auth();
-      }, []);
-      
-      return (
-        <AuthContext.Provider value={{user, setUser, handleLogout}}>
-             {props.children}
-        </AuthContext.Provider>
-      );
+  useEffect(() => {
+    authenticateToken();
+  }, []);
+
+  // Render the authenticated content
+  return (
+    <AuthContext.Provider value={{ user, setUser, handleLogout }}>
+      {props.children}
+    </AuthContext.Provider>
+  );
 }
 
 export { AuthContext, AuthProvider };

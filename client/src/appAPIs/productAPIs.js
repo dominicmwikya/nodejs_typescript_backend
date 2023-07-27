@@ -3,25 +3,59 @@ import axiosSetup from "../configsetup/axiosconfig";
 class producAPIs {
     createProduct = async (values, userId) => {
       try {
-        const response = await axiosSetup.post(`/products/${userId}`, values);
+        const token =  localStorage.getItem('token');
+        
+        const response = await axiosSetup.post(`/products/${userId}`, values,{
+          headers:{
+            Authorization:`Bearer ${token}`
+          }
+        });
         return response.data;
       } catch (error) {
         return error;
       }
     };
 
-    getProducts=async()=>{
-        try {
-            const products= await axiosSetup.get('/products');
-            return products;
-        } catch (error) {
-            return error;
+    getProducts = async(role, setItemState) => { 
+      try {
+        const token = localStorage.getItem('token');
+        const products = await axiosSetup.get('/products', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params: {
+            role: role,
+          },
+        });
+    
+        if (products && products.data && Array.isArray(products.data.products) && products.data.products.length > 0) {
+          setItemState((prevState) => ({
+            ...prevState,
+            items: products.data.products,
+          }));
+        } else {
+          // Handle the case when the products array is empty or undefined.
+          setItemState((prevState) => ({
+            ...prevState,
+            items: [],
+          }));
         }
+      } catch (error) {
+        console.error(error);
+        // Handle the error case here.
+      }
     }
 
-    deleteProduct=async(id)=>{
+    deleteProduct = async(id,role,token) => {
       try {
-        const response= await axiosSetup.delete(`/products/${id}`);
+        // const token = await localStorage.getItem('token');
+        const response = await axiosSetup.delete(
+          `/products/${id}`,role,
+          {
+          headers:{
+            Authorization:`Bearer ${token}`
+          }
+        });
         return response.data;
     } catch (error) {
         return error;
@@ -30,7 +64,13 @@ class producAPIs {
 
     fetchEditProduct=async(id)=>{
       try {
-        const product_data= await axiosSetup.get(`/products/${id}`);
+        const token = localStorage.getItem('token');
+
+        const product_data= await axiosSetup.get(`/products/${id}`,{
+          headers:{
+            Authorization:`Bearer ${token}`
+          }
+        });
         return product_data;
       } catch (error) {
           return error;
@@ -39,7 +79,13 @@ class producAPIs {
 
     updateProduct=async(id, data)=>{
       try {
-        const result= await axiosSetup.put(`/products/${id}`, data);
+        const token = localStorage.getItem('token');
+
+        const result = await axiosSetup.put(`/products/${id}`, data, {
+          headers:{
+            Authorization:`Bearer ${token}`
+          }
+        });
         return result;
       } catch (error) {
         return error;

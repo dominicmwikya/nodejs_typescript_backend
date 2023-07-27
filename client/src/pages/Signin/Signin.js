@@ -24,8 +24,16 @@ const Signin=()=>{
     event.preventDefault();
     try {
       const response = await axios.post('http://localhost:8000/users/login', values);
-      localStorage.setItem('token',response.data.result.token.accessToken);
-      setUser({...user,authState:true})
+      localStorage.setItem('token', response.data.result.token.accessToken);
+      setUser({
+        ...user,
+        authState: true,
+        role: response.data.result.role, // Set the user role based on the response from the login API
+        email:response.data.result.email,
+        id:response.data.result.id
+      });
+  
+      // console.log(response.data);
       redirectTo('/');
       swal({
         text: response.data.result.message,

@@ -1,18 +1,22 @@
-import React, { useEffect, useState,useCallback } from 'react';
-import {  useFetchProductAPI} from '../../appAPIs/productAPIs';
+import React, { useEffect, useState, useCallback, useContext } from 'react';
+import { useFetchProductAPI } from '../../appAPIs/productAPIs';
+import {useTESTAPI} from '../../appAPIs/testAPIclass'; // Import the useTESTAPI hook
 import AddpurchasesForm from './AddpurchasesForm';
-import {Card, Button}  from 'react-bootstrap'
+import { Card, Button } from 'react-bootstrap'
 import axios from 'axios';
 import swal from 'sweetalert'
 import Modal from '../../components/UIs/Modals/index';
-function StockForm(){
-  const [formData, setFormData] = useState([{ productId: '', price: '', quantity:'', supplierId: '',sprice:"" }]);
-  const[products, setItems]=useState([]);
-  const[suppliers, setSupplier]=useState([]);
+import { AuthContext } from '../../ContextAPI/authContextAPI';
+import { useNavigate } from 'react-router-dom';
+
+function StockForm() {
+  const [formData, setFormData] = useState([{ productId: '', price: '', quantity: '', supplierId: '', sprice: "" }]);
+  const [suppliers, setSupplier] = useState([]);
   const { fetchProduct } = useFetchProductAPI();
-  const addRow = () => {
-    setFormData([...formData, { productId: '', price: '',quantity:'', supplierId: '',sprice:"" }]);
-  };
+  const {fetchProduct1}= useTESTAPI();
+
+  const { user } = useContext(AuthContext);
+  const _navigate = useNavigate();
   const [show, setShow] = useState(false);
   const showModal = () => setShow(true);
   const closeModal = () => setShow(false);
@@ -23,21 +27,51 @@ function StockForm(){
     setFormData(formValues);
   };
 
-  const fetchItems = useCallback(async () => {
-    const records = await fetchProduct();
-    setItems(records.data.products);
-  },[])
-
-  const fetchSuppliers=useCallback(async()=>{
-    const res= await axios.get('http://localhost:8000/suppliers/get');
-    const json = await res.data;
-    setSupplier(json);
+  const addRow = () => {
+    setFormData([...formData, { productId: '', price: '', quantity: '', supplierId: '', sprice: "" }]);
+  };
+  const [itemState, setItemState] = useState({
+    items: [],
+    values: {
+      name: '',
+      category: '',
+      min_qty: '',
+      unit: '',
+      description: ''
+    }
   });
- 
-  useEffect(()=>{
+
+  const fetchItems = useCallback(async () => {
+    try {
+      await fetchProduct1(user.role, setItemState);
+    } catch (error) {
+      console.log(error);
+      // Handle the error case here.
+    }
+  }, [user.role]);
+
+  const fetchSuppliers = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get('http://localhost:8000/suppliers/get', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        params: {
+          role: user.role,
+        }
+      });
+      setSupplier(res.data);
+    } catch (error) {
+      console.log(error);
+      // Handle the error case here.
+    }
+  }, [user.role]);
+
+  useEffect(() => {
     fetchItems();
     fetchSuppliers();
-  },[fetchItems])
+  }, [fetchItems,fetchSuppliers, user])
 
   const handleInputChange = (index, event) => {
     const { name, value } = event.target;
@@ -46,47 +80,63 @@ function StockForm(){
     setFormData(formValues);
   };
 
-  const handleSubmit = async(event) => {
-     event.preventDefault();
-    const result= await axios.post(`http://localhost:8000/purchases/post`, formData);
-    if(result.data.message){
-       swal({
-           title:'Good Job!',
-           text:result.data.message,
-           timer:3500,
-           icon:'success'
-       }).then(()=>{
-        setFormData([{ productId: '', price: '',quantity:'', supplierId: '',sprice:"" }]);
-        closeModal();
-       })
-    }else{
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const token = localStorage.getItem('token');
+
+    const result = await axios.post(
+      `http://localhost:8000/purchases/post`,
+      formData, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    if (result.data.message) {
       swal({
-        title:'Error',
-        text:result.data.error,
-        timer:3500,
-        icon:'warning'
-    })
+        title: 'Good Job!',
+        text: result.data.message,
+        timer: 3500,
+        icon: 'success'
+      }).then(() => {
+        setFormData([{ productId: '', price: '', quantity: '', supplierId: '', sprice: "" }]);
+        closeModal();
+      })
+    } else {
+      swal({
+        title: 'Error',
+        text: result.data.error,
+        timer: 3500,
+        icon: 'warning'
+      })
     }
   };
+
+  // Redirect if user is not authenticated
+  if (!user.authState) {
+    _navigate('/login');
+    return null;
+  }
+
   return (
     <Card>
-    <Card.Header><Button variant='success' onClick={showModal}>New Purchase</Button></Card.Header>   
-    <Card.Body>
-    <Modal  
+      <Card.Header><Button variant='success' onClick={showModal}>New Purchase</Button></Card.Header>
+      <Card.Body>
+        <Modal
           show={show}
           onClose={closeModal}
           size="lg">
-            <AddpurchasesForm 
-              formData={formData} 
-              handleSubmit={handleSubmit} 
-              handleInputChange={handleInputChange}
-              products={products} 
-              removeRow={removeRow}
-              addRow={addRow}
-            />
-    </Modal>
-    </Card.Body>       
-  </Card>
+          <AddpurchasesForm
+            formData={formData}
+            handleSubmit={handleSubmit}
+            handleInputChange={handleInputChange}
+            products={itemState.items}
+            removeRow={removeRow}
+            addRow={addRow}
+          />
+        </Modal>
+      </Card.Body>
+    </Card>
   );
 }
+
 export default StockForm;

@@ -38,6 +38,7 @@ export default class UserRepository {
     const payload: object = {
       id: user.id,
       email: user.email,
+      role:user.role,
       name: user.firstName + ' ' + user.lastName,
     };
     const token: string = Jwt.sign({ payload, exp: expiryTimeInSeconds }, my_secret_key);
@@ -142,9 +143,13 @@ export default class UserRepository {
       throw new Error('Your account is inactive! Please activate your account.')
     } else {
       const generatedAccessToken = this.generateUserToken(userExists[0]);
-  
+
       return {
         token: generatedAccessToken,
+        role:userExists[0].role,
+        id:userExists[0].id,
+        email:userExists[0].email,
+        name:userExists[0].firstName,
         authState: true,
         message: `User Login sucessfull! Welcome ${userExists[0].firstName}`,
       }

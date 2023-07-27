@@ -1,12 +1,20 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { Container,Row,Col, Pagination, Card, Table, Form, Button } from 'react-bootstrap';
 import {useNavigate} from 'react-router-dom'
+import { AuthContext } from '../../ContextAPI/authContextAPI';
  const SupplierList=()=> {
     const takeOptions = [2, 5, 10, 25, 50, 100, 200];
     const redirectTo=useNavigate();
+    const {user} = useContext(AuthContext);
     const onBtnClick=()=>{
            redirectTo('/supplier/add');
     }
+    
+    if(!user.authState){
+      redirectTo('/login');
+      return null;
+    }
+
   return (
     <Container>
     <Row>
